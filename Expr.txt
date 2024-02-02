@@ -1,3 +1,4 @@
 a=b+c
 z=a+y
 a=a+1
+dog=cat+mouse
