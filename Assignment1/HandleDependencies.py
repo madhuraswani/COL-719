@@ -37,46 +37,9 @@ def variableDependency_Dict(expr_list):
         
         
     return dep
-def handle_dependencies(fileName):
 
-    lines=read_txt_getExpr('Assignment1/Expr.txt')
-    clean_expr(lines)
-    depend=variableDependency_Dict(lines)
-    print(depend)
-    for var in depend:
-        current_version=0
-        WWR = re.compile(r'WWR*')
-        matches = WWR.finditer(depend[var][0])
-        positions_wwr = [(match.start(), match.end()) for match in matches]
-        for pos in positions_wwr:
-            s,e=pos
-            lineNo=depend[var][1][s+1:e-1]
-            for each_line in lineNo:
-                newvar=var+"_"+str(current_version)
-                lines[int(each_line)]=lines[int(each_line)].replace(var,newvar)
-            current_version+=1
-        RWR = re.compile(r'RWR*')
-        matches = RWR.finditer(depend[var][0])
-        positions_rwr = [(match.start(), match.end()) for match in matches]
-        print(positions_rwr)
-        for pos in positions_rwr:
-            s,e=pos
-            l=int(depend[var][1][s+1])
-            W,R=lines[l].split('=')
-            if W==var:
-                newvar=var+"_"+str(current_version)
-                lines[l]=newvar+"="+R
-            lineNo=depend[var][1][s+2:e]
 
-            for each_line in lineNo:
-                print(each_line)
-                newvar=var+"_"+str(current_version)
-                lines[int(each_line)]=lines[int(each_line)].replace(var,newvar)
-            current_version+=1
-    with open(fileName.split('.txt')[0]+"_NoDep.txt", 'w') as output_file:
-        output_file.write('\n'.join(lines))
-
-def handle_dependicies2(fileName):
+def handle_dependicies(fileName):
     lines=read_txt_getExpr(fileName)
     clean_expr(lines)
     depend=variableDependency_Dict(lines)
@@ -103,4 +66,4 @@ def handle_dependicies2(fileName):
     with open(fileName.split('.txt')[0]+"_NoDep.txt", 'w') as output_file:
         output_file.write('\n'.join(lines))
 
-handle_dependicies2('Assignment1/Expr.txt')
+handle_dependicies('Assignment1/Expr.txt')
