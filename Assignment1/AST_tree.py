@@ -52,10 +52,6 @@ def parse_atom(tokens):
     else:
         raise SyntaxError("Invalid expression")
 
-def tokenize(expression):
-    # Split the expression into tokens (numbers, variables, and operators)
-    return [token.strip() for token in re.findall(r'\b(?:\d+|[a-zA-Z_][a-zA-Z0-9_]*)\b|\S', expression)]
-
 def expression_to_ast(expression):
     l,r=expression.split('=')
     tokens = tokenize(r)
@@ -132,7 +128,7 @@ def variableDependency_Dict(expr_list):
 def create_DFG(fileName):
     graph = nx.DiGraph()
     label={}
-    expr_List=read_txt_getExpr('Expr.txt')
+    expr_List=read_txt_getExpr(fileName)
     clean_expr(expr_List)
     label_counter = {'=': 1, '+': 1, '-': 1, '*': 1, '/': 1}
     for expr in expr_List:
@@ -148,6 +144,6 @@ def display_Graph(graph):
     plt.show()
 
 
-G=create_DFG('Expr.txt')
+G=create_DFG('Assignment1/Expr_NoDep.txt')
 display_Graph(G)
-print(variableDependency_Dict(read_txt_getExpr('Expr.txt')))
+print(variableDependency_Dict(read_txt_getExpr('Assignment1/Expr_NoDep.txt')))
