@@ -2,6 +2,7 @@ import re
 import networkx as nx
 import matplotlib.pyplot as plt
 
+#parent Node
 class Node:
     pass
 
@@ -11,16 +12,19 @@ class Assignment(Node):
         self.op = op
         self.right = right
 
+#Extending class Binary operation from Node class
 class BinOp(Node):
     def __init__(self, left, op, right):
         self.left = left
         self.op = op
         self.right = right
 
+#Extended class Num: to hold constant values
 class Num(Node):
     def __init__(self, value):
         self.value = value
 
+#Extended class Var: to hold variables
 class Var(Node):
     def __init__(self, name):
         self.name = name
@@ -28,6 +32,7 @@ class Var(Node):
 def parse_expression(tokens):
     return parse_addition(tokens)
 
+#function to parse addition/subtraction operation and variables/constants involved
 def parse_addition(tokens):
     left = parse_multiplication(tokens)
     while tokens and tokens[0] in ('+', '-'):
@@ -36,14 +41,16 @@ def parse_addition(tokens):
         left = BinOp(left, op, right)
     return left
 
+#function to parse mult/division operation and variables/constants involved
 def parse_multiplication(tokens):
     left = parse_atom(tokens)
     while tokens and tokens[0] in ('*', '/'):
-        op = tokens.pop(0)
-        right = parse_atom(tokens)
+        op = tokens.pop(0) #popping operation from statement
+        right = parse_atom(tokens) # assigning constant/variable to right
         left = BinOp(left, op, right)
     return left
 
+#parsing constants or variables
 def parse_atom(tokens):
     if tokens and tokens[0].isdigit():
         return Num(int(tokens.pop(0)))
@@ -52,6 +59,8 @@ def parse_atom(tokens):
     else:
         raise SyntaxError("Invalid expression")
 
+# tokenizes the expression based on assignment operator (=) and sends the remaining expression to 
+#be parsed.
 def expression_to_ast(expression):
     l,r=expression.split('=')
     tokens = tokenize(r)
@@ -68,6 +77,7 @@ def check_if_Variable_alreadyInGraph(graph,node):
     return False
             
 
+#adding nodes and edges to graph, for operator, number, variable
 def ast_to_graph(ast_node, graph,label,label_counter=None):
     if label_counter is None:
         label_counter = {'=': 1, '+': 1, '-': 1, '*': 1, '/': 1}  # Initialize label counter
@@ -76,6 +86,7 @@ def ast_to_graph(ast_node, graph,label,label_counter=None):
         unique_label = f"{op}_{label_counter[op]}"
         label_counter[op] += 1
         return unique_label
+    #Adding nodes, edges to DFG
     if isinstance(ast_node, BinOp):
         label[ast_node]=get_unique_label(ast_node.op)
         graph.add_node(ast_node, label=label)
@@ -97,21 +108,25 @@ def ast_to_graph(ast_node, graph,label,label_counter=None):
         graph.add_edge( ast_node,ast_node.left)
         graph.add_edge(ast_node.right, ast_node)
 
+#reading input expression file 
 def read_txt_getExpr(fileName):
     with open(fileName,"r",encoding='utf-8') as f:
         s=f.readlines()
     return s
 
+#Removing space and nexrline from expression
 def clean_expr(expr_list):
     for i,expr in zip(range(len(expr_list)),expr_list):
         expr=expr.replace(' ','')
         expr=expr.replace('\n','')
         expr_list[i]=expr
 
+#tokenize the expression using regex
 def tokenize(expression):
     return [token.strip() for token in re.findall(r'\b(?:\d+|[a-zA-Z_][a-zA-Z0-9_]*)\b|\S', expression)]
 
-
+#creating a dictionary for every variable in expr, for Write/Read and how many times
+#key:value = variable:[W/R, <expression_line>]
 def variableDependency_Dict(expr_list):
     dep={}
     for i,expr in  zip(range(len(expr_list)),expr_list):
@@ -148,6 +163,7 @@ def create_DFG(fileName):
     graph=nx.relabel_nodes(graph,label)
     return graph
 
+#Function to display the graph using matplotlib
 def display_Graph(graph):
     pos = nx.spring_layout(graph)
     nx.draw(graph, pos, with_labels=True, node_size=400, node_color='lightblue', font_size=8)
