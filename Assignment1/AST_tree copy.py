@@ -19,7 +19,7 @@ class BinOp(Node):
 
 class Num(Node):
     def __init__(self, value):
-        self.value = value
+        self.value = value 
 
 class Var(Node):
     def __init__(self, name):
@@ -58,17 +58,25 @@ def expression_to_ast(expression):
     expr=Assignment(Var(l),'=',parse_expression(tokens))
     return expr
 
-def check_if_Variable_alreadyInGraph(graph,node):
+def check_if_Variable_alreadyInGraph(graph,parentNode,node=Var):
     for visit in list(graph.nodes()):
         if isinstance(visit,Var):
-            if node.name==visit.name:
-                node=visit
+            if node.name ==visit.name:
+                if parentNode.left == node:
+                    parentNode.left=visit
+                elif parentNode.right==node:
+                    parentNode.right=visit
                 return True
+            else:
+                continue
+
+        else:
+            continue
             
     return False
             
 
-def ast_to_graph(ast_node, graph,label,label_counter=None):
+def ast_to_graph(ast_node, graph,label,parentNode=None,label_counter=None):
     if label_counter is None:
         label_counter = {'=': 1, '+': 1, '-': 1, '*': 1, '/': 1}  # Initialize label counter
 
@@ -79,23 +87,30 @@ def ast_to_graph(ast_node, graph,label,label_counter=None):
     if isinstance(ast_node, BinOp):
         label[ast_node]=get_unique_label(ast_node.op)
         graph.add_node(ast_node, label=label)
-        ast_to_graph(ast_node.left, graph,label,label_counter)
-        ast_to_graph(ast_node.right, graph,label,label_counter)
+        left=ast_node.left
+        right=ast_node.right
+        ast_to_graph(left, graph,label,ast_node,label_counter)
+        ast_to_graph(right,graph,label,ast_node,label_counter)
         graph.add_edge(ast_node.left, ast_node)
         graph.add_edge(ast_node.right, ast_node)
     elif isinstance(ast_node, Num):
         label[ast_node]=ast_node.value
         graph.add_node(ast_node, label=label)
     elif isinstance(ast_node, Var):
-        label[ast_node]=ast_node.name
-        graph.add_node(ast_node, label=label)
+        if check_if_Variable_alreadyInGraph(graph=graph,parentNode=parentNode,node=ast_node)==False:
+            label[ast_node]=ast_node.name
+            graph.add_node(ast_node, label=label)
+        else:
+            print(ast_node.name,ast_node)
     elif isinstance(ast_node,Assignment):
         label[ast_node]=get_unique_label(ast_node.op)
         graph.add_node(ast_node, label=label)
-        ast_to_graph(ast_node.left, graph,label,label_counter)
-        ast_to_graph(ast_node.right, graph,label,label_counter)
-        graph.add_edge( ast_node,ast_node.left)
-        graph.add_edge(ast_node.right, ast_node)
+        left=ast_node.left
+        right=ast_node.right
+        ast_to_graph(left, graph,label,label_counter)
+        ast_to_graph(right, graph,label,label_counter)
+        graph.add_edge( ast_node,left)
+        graph.add_edge(right, ast_node)
 
 def read_txt_getExpr(fileName):
     with open(fileName,"r",encoding='utf-8') as f:
