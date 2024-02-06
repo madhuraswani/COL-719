@@ -1,7 +1,7 @@
 import re
 import networkx as nx
 import matplotlib.pyplot as plt
-
+from HandleDependencies import handle_dependicies
 #parent Node
 class Node:
     pass
@@ -165,11 +165,11 @@ def create_DFG(fileName):
 
 #Function to display the graph using matplotlib
 def display_Graph(graph):
-    pos = nx.spring_layout(graph)
+    pos = nx.spring_layout(graph,seed=150)
     nx.draw(graph, pos, with_labels=True, node_size=400, node_color='lightblue', font_size=8)
     plt.show()
 
-
+handle_dependicies('Assignment1/Expr.txt')
 G=create_DFG('Assignment1/Expr_NoDep.txt')
 display_Graph(G)
 print(variableDependency_Dict(read_txt_getExpr('Assignment1/Expr_NoDep.txt')))
